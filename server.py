@@ -29,7 +29,6 @@ def handle_connect():
 @socketio.on('emit_method')
 def handle_sendEmit(val):
     print(val)
-    hola="PPPPPEEEEPEEEEEEEEEEW"
     dictAll={}
     dictAll.update(discSSDP())
     dictAll.update(discMDNS())
