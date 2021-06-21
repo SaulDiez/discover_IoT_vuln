@@ -230,7 +230,7 @@ def scan(timeout=DISCOVER_TIMEOUT):
         except socket.error:
             pass
 
-    entries = {}
+    entrieslist = {}
     lista = []
     for sock in [s for s in sockets]:
         try:
@@ -278,18 +278,19 @@ def scan(timeout=DISCOVER_TIMEOUT):
                         lista.append(entry.description.get('device'))
                         checksame=0
                 else:
-                    lista.append(entry.description.get('device'))
+                    if entry.description.get('device') is not None:
+                        lista.append(entry.description.get('device'))
 
-                #entries[(entry.st, entry.location)] = entry
-                #entries["dispositivosUPNP"] = lista
+                #entrieslist[(entry.st, entry.location)] = entry
+                #entrieslist["dispositivosUPNP"] = lista
 
 
     finally:
         for s in sockets:
             s.close()
 
-    entries["dispositivosUPNP"] = lista
+    entrieslist["dispositivosUPNP"] = lista
 
-    return entries
+    return entrieslist
 #    return sorted(entries.values(), key=lambda entry: entry.location or '')
 
