@@ -5,10 +5,22 @@ from pprint import pprint
 import urllib.request as urllib2
 import xmltodict
 import json
-
+import httpx
 #print("Scanning SSDP..")
 def discSSDP():
-    return scan()
+    return buscarVuln(entries=scan())
+
+def buscarVuln(entries):
+    if len(entries["dispositivosUPNP"])>0:
+        for item in range(0, len(entries["dispositivosUPNP"])):
+            params = {'keyword': entries["dispositivosUPNP"][item]['normalName'],
+                     'cpeMatchString': 'cpe:/:'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ '17.0'#entries["dispositivosUPNP"][item]['normalVersion']
+                     }
+            r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            entries["dispositivosUPNP"][item]["cves"]=r.json()
+        strdsfsd="https://services.nvd.nist.gov/rest/json/cves/1.0?keyword=kodi&cpeMatchString=cpe:/:kodi:kodi:17.0"
+
+    return entries
 #discoveredDict=scan()
 #for url in discoveredDict:
 #    print(discoveredDict.values())
