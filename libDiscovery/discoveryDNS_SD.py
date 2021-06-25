@@ -29,7 +29,7 @@ def on_service_state_change(
             else:
                 dic["normalName"] = ""
 
-            normalService=dic["ServiceType"].split("_")[1].split("_")[0].split(".")[0]
+            normalService=dic["ServiceType"].split("_")[1].split("_")[0].split(".")[0].split("-")[0]
             dic["normalService"] = normalService.upper()
 
             if info.properties:
@@ -76,29 +76,34 @@ def buscarVulnMDNS(entries):
     if len(entries["serviciosMDNS"])>0:
         for item in range(0, len(entries["serviciosMDNS"])):
             sleep(1)
+            print(str(item))
             params = {'keyword': entries["serviciosMDNS"][item]["normalName"],
                      'cpeMatchString': 'cpe:/:'+ entries["serviciosMDNS"][item]['normalName'] +':'+ entries["serviciosMDNS"][item]['normalName'],
                      'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
                      }
-
+            exct=0
             try:
                 r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
             except httpx.ReadTimeout as exc:
+                exct=1
                 print(f"An error occurred while requesting {exc.request.url!r}.")
-            r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
-            if r.json()["totalResults"] != '0':
-                entries["serviciosMDNS"][item]["cves"]=r.json()
-            
+            if exct == 0:
+                if r.json()["totalResults"] != '0':
+                    entries["serviciosMDNS"][item]["cves"]=r.json()
             sleep(1)
+            print(str(item))
             params = {'keyword': entries["serviciosMDNS"][item]['normalService'],
                      'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
                      }
-
+            exct=0           
             try:
                 r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
             except httpx.ReadTimeout as exc:
+                exct=1
                 print(f"An error occurred while requesting {exc.request.url!r}.")
-            if r.json()["totalResults"] != '0':
-                entries["serviciosMDNS"][item]["cves"]=r.json()
+            if exct == 0:
+                if r.json()["totalResults"] != '0':
+                    entries["serviciosMDNS"][item]["cves"]=r.json()
+
     
     return entries
