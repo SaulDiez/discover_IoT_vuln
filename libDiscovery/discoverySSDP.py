@@ -6,17 +6,24 @@ import urllib.request as urllib2
 import xmltodict
 import json
 import httpx
+from time import sleep
 #print("Scanning SSDP..")
 def discSSDP():
-    return buscarVuln(entries=scan())
+    return buscarVulnUPnP(entries=scan())
 
-def buscarVuln(entries):
+def buscarVulnUPnP(entries):
     if len(entries["dispositivosUPNP"])>0:
         for item in range(0, len(entries["dispositivosUPNP"])):
+            sleep(1)
             params = {'keyword': entries["dispositivosUPNP"][item]['normalName'],
-                     'cpeMatchString': 'cpe:/:'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ '17.0'#entries["dispositivosUPNP"][item]['normalVersion']
+                     'cpeMatchString': 'cpe:/:'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ entries["dispositivosUPNP"][item]['normalName'] +':'+ '17.0',
+                     'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
                      }
-            r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            #entries["dispositivosUPNP"][item]['normalVersion']
+            try:
+                r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            except httpx.ReadTimeout as exc:
+                print(f"An error occurred while requesting {exc.request.url!r}.")
             entries["dispositivosUPNP"][item]["cves"]=r.json()
         strdsfsd="https://services.nvd.nist.gov/rest/json/cves/1.0?keyword=kodi&cpeMatchString=cpe:/:kodi:kodi:17.0"
 

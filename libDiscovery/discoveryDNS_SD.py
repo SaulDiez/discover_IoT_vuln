@@ -4,6 +4,7 @@ from time import sleep
 
 from zeroconf import IPVersion, ServiceBrowser, ServiceStateChange, Zeroconf, ZeroconfServiceTypes
 import json
+import httpx
 
 dictMDNS={}
 lista = []
@@ -21,6 +22,15 @@ def on_service_state_change(
             dic["IPv4"] = info.parsed_addresses(version=IPVersion.V4Only)
             dic["Addresses"] = info.parsed_addresses()
             dic["Host"] = info.server
+
+            normalName=dic["Name"].split(" (")[0]
+            if len(normalName)<40:
+                dic["normalName"] = normalName
+            else:
+                dic["normalName"] = ""
+
+            normalService=dic["ServiceType"].split("_")[1].split("_")[0].split(".")[0]
+            dic["normalService"] = normalService.upper()
 
             if info.properties:
                 for key, value in info.properties.items():
@@ -55,17 +65,40 @@ def discMDNS():
     print("\nBrowsing %d MDNS service(s), press Ctrl-C to exit...\n" % len(services))
     browser = ServiceBrowser(zeroconf, services, handlers=[on_service_state_change])
 
-    sleep(1)
+    sleep(0.5)
     zeroconf.close()
-    dictMDNSJson = json.dumps(dictMDNS)
+    #dictMDNSJson = json.dumps(dictMDNS)
     print(dictMDNS)
+    dictMDNSVuln=buscarVulnMDNS(entries=dictMDNS)
+    return dictMDNSVuln
 
-#start_browserMDNS()
-    return dictMDNS
-#    try:
-#        while True:
-#            sleep(0.1)
-#    except KeyboardInterrupt:
-#        pass
-#    finally:
-#        zeroconf.close()
+def buscarVulnMDNS(entries):
+    if len(entries["serviciosMDNS"])>0:
+        for item in range(0, len(entries["serviciosMDNS"])):
+            sleep(1)
+            params = {'keyword': entries["serviciosMDNS"][item]["normalName"],
+                     'cpeMatchString': 'cpe:/:'+ entries["serviciosMDNS"][item]['normalName'] +':'+ entries["serviciosMDNS"][item]['normalName'],
+                     'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
+                     }
+
+            try:
+                r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            except httpx.ReadTimeout as exc:
+                print(f"An error occurred while requesting {exc.request.url!r}.")
+            r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            if r.json()["totalResults"] != '0':
+                entries["serviciosMDNS"][item]["cves"]=r.json()
+            
+            sleep(1)
+            params = {'keyword': entries["serviciosMDNS"][item]['normalService'],
+                     'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
+                     }
+
+            try:
+                r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+            except httpx.ReadTimeout as exc:
+                print(f"An error occurred while requesting {exc.request.url!r}.")
+            if r.json()["totalResults"] != '0':
+                entries["serviciosMDNS"][item]["cves"]=r.json()
+    
+    return entries

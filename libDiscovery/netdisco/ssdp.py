@@ -280,6 +280,7 @@ def scan(timeout=DISCOVER_TIMEOUT):
                         checksame=0
                 else:
                     if entry.description.get('device') is not None:
+                        #if entry.description.get('URLBase') meter
                         lista.append(entry.description.get('device'))
 
                 #entrieslist[(entry.st, entry.location)] = entry
@@ -294,7 +295,7 @@ def scan(timeout=DISCOVER_TIMEOUT):
     if len(entrieslist["dispositivosUPNP"])>0:
         for item in range(0, len(entrieslist["dispositivosUPNP"])):
             if entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" ")[0] == "Kodi":
-                entrieslist["dispositivosUPNP"][item]['normalName']=entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" ")[0]
+                entrieslist["dispositivosUPNP"][item]['normalName']=entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" (")[0]
                 entrieslist["dispositivosUPNP"][item]['IPv4']=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',entrieslist["dispositivosUPNP"][0]['presentationURL'])[0]
                 entrieslist["dispositivosUPNP"][item]['normalVersion']=entrieslist["dispositivosUPNP"][item]['modelNumber'].split(" (")[0]
             else:
