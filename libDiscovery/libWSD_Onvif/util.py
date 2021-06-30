@@ -6,6 +6,7 @@ import httpx
 #import time	deberia ser necesaria
 import uuid
 import os
+import re
 
 from urllib.parse import urlparse
 from .onvif2 import ONVIFCamera
@@ -398,7 +399,9 @@ def runWSDiscovery():
             dicDev["Scopes"]= device.getScopesList()
             dicDev["EPR"]= device.getEPR()
             dicDev["XAddrs"]= device.getXAddrs()
-            dicDev["Server"]= device.getServer()
+            dicDev["IPv4"]=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',device.getXAddrs()[0])[0]
+            dicDev["Server"]= device.getServer().replace("/"," ")
+
             listWSD.append(dicDev)#la lista matiene los cambios durante el bucle
             print(os.path.abspath(os.getcwd()))
             pathWSDL=os.path.abspath("libDiscovery/libWSD_Onvif/onvif2/wsdl")
@@ -411,7 +414,10 @@ def runWSDiscovery():
 
                 dev_info=dev_service.GetDeviceInformation()
                 dicDev["Manufacturer"]= dev_info.Manufacturer
-                dicDev["Model"]= dev_info.Model
+                if dev_info.Model == "IPC":
+                    dicDev["Model"]= "IP Camera"
+                else:
+                    dicDev["Model"]= dev_info.Model
                 dicDev["FirmwareVersion"]= dev_info.FirmwareVersion
                 dicDev["SerialNumber"]= dev_info.SerialNumber
                 dicDev["HardwareId"]= dev_info.HardwareId

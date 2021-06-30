@@ -24,8 +24,8 @@ def on_service_state_change(
             dic["Host"] = info.server
 
             normalName=dic["Name"].split(" (")[0]
-            if len(normalName)<40:
-                dic["normalName"] = normalName
+            if len(normalName)<60:
+                dic["normalName"] = normalName.split(" -")[0]
             else:
                 dic["normalName"] = ""
 
@@ -77,33 +77,44 @@ def buscarVulnMDNS(entries):
         for item in range(0, len(entries["serviciosMDNS"])):
             sleep(1)
             print(str(item))
-            params = {'keyword': entries["serviciosMDNS"][item]["normalName"],
-                     'cpeMatchString': 'cpe:/:'+ entries["serviciosMDNS"][item]['normalName'] +':'+ entries["serviciosMDNS"][item]['normalName'],
-                     'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
-                     }
-            exct=0
-            try:
-                r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
-            except httpx.ReadTimeout as exc:
-                exct=1
-                print(f"An error occurred while requesting {exc.request.url!r}.")
-            if exct == 0:
-                if r.json()["totalResults"] != '0':
-                    entries["serviciosMDNS"][item]["cves"]=r.json()
+            if entries["serviciosMDNS"][item]["normalName"] != "":
+                if entries["serviciosMDNS"][item]["normalName"] == "Kodi":
+                    params = {'keyword': entries["serviciosMDNS"][item]["normalName"],
+                            'cpeMatchString': 'cpe:/:'+ entries["serviciosMDNS"][item]['normalName'] +':'+ entries["serviciosMDNS"][item]['normalName'],
+                            'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
+                             }
+                else:
+                    params = {'keyword': entries["serviciosMDNS"][item]["normalName"],
+                            'cpeMatchString': 'cpe:/:'+ entries["serviciosMDNS"][item]['normalName'].split(" ")[0],
+                            'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
+                             }
+                exct=0
+                try:
+                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    print(r.url)
+                except httpx.ReadTimeout as exc:
+                    exct=1
+                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                if exct == 0:
+                    if r.json()["totalResults"] != '0':
+                        entries["serviciosMDNS"][item]["cves"]=r.json()
+
             sleep(1)
             print(str(item))
-            params = {'keyword': entries["serviciosMDNS"][item]['normalService'],
-                     'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
-                     }
-            exct=0           
-            try:
-                r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
-            except httpx.ReadTimeout as exc:
-                exct=1
-                print(f"An error occurred while requesting {exc.request.url!r}.")
-            if exct == 0:
-                if r.json()["totalResults"] != '0':
-                    entries["serviciosMDNS"][item]["cves"]=r.json()
+            if (len(entries["serviciosMDNS"][item]['normalService']) > 3) and (entries["serviciosMDNS"][item]['normalService'] != "HTTP"):
+                params = {'keyword': entries["serviciosMDNS"][item]['normalService'],
+                        'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
+                         }
+                exct=0           
+                try:
+                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    print(r.url)
+                except httpx.ReadTimeout as exc:
+                    exct=1
+                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                if exct == 0:
+                    if r.json()["totalResults"] != '0':
+                        entries["serviciosMDNS"][item]["cves"]=r.json()
 
     
     return entries

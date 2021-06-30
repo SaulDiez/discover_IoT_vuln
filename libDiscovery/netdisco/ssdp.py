@@ -275,12 +275,14 @@ def scan(timeout=DISCOVER_TIMEOUT):
                             checksame=1
                             break
                     if checksame != 1:
-                        #if entry.description.get('URLBase') meter
+                        if entry.description.get('URLBase'):
+                            entry.description.get('device')["URLBase"]=entry.description.get('URLBase')
                         lista.append(entry.description.get('device'))
                         checksame=0
                 else:
                     if entry.description.get('device') is not None:
-                        #if entry.description.get('URLBase') meter
+                        if entry.description.get('URLBase'):
+                            entry.description.get('device')["URLBase"]=entry.description.get('URLBase')
                         lista.append(entry.description.get('device'))
 
                 #entrieslist[(entry.st, entry.location)] = entry
@@ -294,13 +296,15 @@ def scan(timeout=DISCOVER_TIMEOUT):
     entrieslist["dispositivosUPNP"] = lista
     if len(entrieslist["dispositivosUPNP"])>0:
         for item in range(0, len(entrieslist["dispositivosUPNP"])):
+            print(entrieslist["dispositivosUPNP"][item]['friendlyName'])
             if entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" ")[0] == "Kodi":
                 entrieslist["dispositivosUPNP"][item]['normalName']=entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" (")[0]
-                entrieslist["dispositivosUPNP"][item]['IPv4']=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',entrieslist["dispositivosUPNP"][0]['presentationURL'])[0]
+                entrieslist["dispositivosUPNP"][item]['IPv4']=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',entrieslist["dispositivosUPNP"][item]['presentationURL'])[0]
                 entrieslist["dispositivosUPNP"][item]['normalVersion']=entrieslist["dispositivosUPNP"][item]['modelNumber'].split(" (")[0]
             else:
                 entrieslist["dispositivosUPNP"][item]['normalName']=entrieslist["dispositivosUPNP"][item]['friendlyName'].split(" (")[0]
-                entrieslist["dispositivosUPNP"][item]['IPv4']=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',entrieslist["dispositivosUPNP"][0]['URLBase'])[0]
+                entrieslist["dispositivosUPNP"][item]['IPv4']=re.findall(r'(?:\d{1,3}\.)+(?:\d{1,3})',entrieslist["dispositivosUPNP"][item]['URLBase'])[0]
+                entrieslist["dispositivosUPNP"][item]['normalVersion']=entrieslist["dispositivosUPNP"][item]['modelNumber'].split(" (")[0]
 
     return entrieslist
 #    return sorted(entries.values(), key=lambda entry: entry.location or '')
