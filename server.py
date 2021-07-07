@@ -32,7 +32,7 @@ def handle_sendEmit(val):
     dictAll={}
     dictAll.update(discSSDP())
     dictAll.update(discMDNS())
-    dictAll.update(discWSD())
+    #dictAll.update(discWSD())
     emit('customEmit', dictAll)
 
 if __name__ == '__main__':

@@ -68,13 +68,15 @@ def discMDNS():
     sleep(0.5)
     zeroconf.close()
     #dictMDNSJson = json.dumps(dictMDNS)
-    print(dictMDNS)
+    #print(dictMDNS)
     dictMDNSVuln=buscarVulnMDNS(entries=dictMDNS)
+    #print(dictMDNSVuln)
     return dictMDNSVuln
 
 def buscarVulnMDNS(entries):
     if len(entries["serviciosMDNS"])>0:
         for item in range(0, len(entries["serviciosMDNS"])):
+            client1 = httpx.Client(timeout=30)
             sleep(1)
             print(str(item))
             if entries["serviciosMDNS"][item]["normalName"] != "":
@@ -89,15 +91,18 @@ def buscarVulnMDNS(entries):
                             'pubStartDate': '2016-01-01T00:00:00:000 UTC-00:00'
                              }
                 exct=0
+                
                 try:
-                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    r = client1.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
                     print(r.url)
-                except httpx.ReadTimeout as exc:
+                except:
                     exct=1
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    print("An error occurred while requesting.")
                 if exct == 0:
-                    if r.json()["totalResults"] != '0':
-                        entries["serviciosMDNS"][item]["cves"]=r.json()
+                    #if r.json()["totalResults"] != '0':
+                    entries["serviciosMDNS"][item]["cves"]=r.json()
+                else:
+                    entries["serviciosMDNS"][item]["cves"]={"totalResults":0}
 
             sleep(1)
             print(str(item))
@@ -107,14 +112,16 @@ def buscarVulnMDNS(entries):
                          }
                 exct=0           
                 try:
-                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    r = client1.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
                     print(r.url)
-                except httpx.ReadTimeout as exc:
+                except:
                     exct=1
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    print("An error occurred while requesting.")
                 if exct == 0:
-                    if r.json()["totalResults"] != '0':
-                        entries["serviciosMDNS"][item]["cves"]=r.json()
+                    #if r.json()["totalResults"] != '0':
+                    entries["serviciosMDNS"][item]["cves"]=r.json()
+                else:
+                    entries["serviciosMDNS"][item]["cves"]={"totalResults":0}
 
     
     return entries

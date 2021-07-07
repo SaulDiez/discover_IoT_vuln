@@ -14,6 +14,7 @@ def discSSDP():
 def buscarVulnUPnP(entries):
     if len(entries["dispositivosUPNP"])>0:
         for item in range(0, len(entries["dispositivosUPNP"])):
+            client1 = httpx.Client(timeout=30)
             sleep(1)
             if entries["dispositivosUPNP"][item]['normalName'] == "Kodi":
                 params = {'keyword': entries["dispositivosUPNP"][item]['normalName'],
@@ -22,13 +23,15 @@ def buscarVulnUPnP(entries):
                          }
                 exct=0
                 try:
-                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    r = client1.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
                     print(r.url)
-                except httpx.ReadTimeout as exc:
+                except:
                     exct=1
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    print("An error occurred while requesting.")
                 if exct == 0:
                     entries["dispositivosUPNP"][item]["cves"]=r.json()
+                else:
+                    entries["dispositivosUPNP"][item]["cves"]={"totalResults":0}
             else:
                 params = {'keyword': entries["dispositivosUPNP"][item]['normalName'],
                          'cpeMatchString': 'cpe:/:'+ entries["dispositivosUPNP"][item]['normalName'].split(" ")[0],
@@ -36,13 +39,15 @@ def buscarVulnUPnP(entries):
                          }
                 exct=0
                 try:
-                    r = httpx.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
+                    r = client1.get('https://services.nvd.nist.gov/rest/json/cves/1.0', params=params)
                     print(r.url)
-                except httpx.ReadTimeout as exc:
+                except:
                     exct=1
-                    print(f"An error occurred while requesting {exc.request.url!r}.")
+                    print("An error occurred while requesting.")
                 if exct == 0:
                     entries["dispositivosUPNP"][item]["cves"]=r.json()
+                else:
+                    entries["dispositivosUPNP"][item]["cves"]={"totalResults":0}
         strdsfsd="https://services.nvd.nist.gov/rest/json/cves/1.0?keyword=kodi&cpeMatchString=cpe:/:kodi:kodi:17.0"
 
     return entries
